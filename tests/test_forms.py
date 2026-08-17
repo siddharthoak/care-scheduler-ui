@@ -41,3 +41,27 @@ def test_cancel_form_missing_reason_raises():
     form2 = CancelForm(appointment_id="a1", reason="   ")
     with pytest.raises(FormValidationError):
         form2.to_payload()
+
+
+def test_cancel_form_placeholder_reasons_raise():
+    placeholders = ["placeholder", "none", "n/a", "na", "no reason", "blank", "test", "tbd", "temp", "null", "undefined"]
+    for placeholder in placeholders:
+        form = CancelForm(appointment_id="a1", reason=placeholder)
+        with pytest.raises(FormValidationError) as excinfo:
+            form.to_payload()
+        assert "reason cannot be a placeholder" in str(excinfo.value)
+
+        # case-insensitive check
+        form_caps = CancelForm(appointment_id="a1", reason=placeholder.upper())
+        with pytest.raises(FormValidationError):
+            form_caps.to_payload()
+
+
+def test_cancel_form_punctuation_only_reasons_raise():
+    punctuations = ["-", "...", "???", "!!!", " - - "]
+    for punc in punctuations:
+        form = CancelForm(appointment_id="a1", reason=punc)
+        with pytest.raises(FormValidationError) as excinfo:
+            form.to_payload()
+        assert "reason cannot be a placeholder" in str(excinfo.value)
+
