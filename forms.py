@@ -47,15 +47,46 @@ class BookingForm:
 @dataclass
 class CancelForm:
     appointment_id: str
+    reason: str
     errors: list[str] = field(default_factory=list)
 
     def validate(self) -> bool:
         self.errors = []
         if not self.appointment_id.strip():
             self.errors.append("appointment_id is required")
+        
+        reason_val = self.reason
+        if not reason_val or not reason_val.strip():
+            self.errors.append("reason is required")
+        elif self._is_placeholder(reason_val):
+            self.errors.append("reason cannot be a placeholder")
         return not self.errors
+
+    def _is_placeholder(self, reason: str) -> bool:
+        cleaned = reason.strip().lower()
+        if not cleaned:
+            return True
+        if not any(c.isalnum() for c in cleaned):
+            return True
+        placeholders = {
+            "placeholder",
+            "none",
+            "n/a",
+            "na",
+            "no reason",
+            "blank",
+            "test",
+            "tbd",
+            "temp",
+            "null",
+            "undefined",
+        }
+        return cleaned in placeholders
 
     def to_payload(self) -> dict:
         if not self.validate():
             raise FormValidationError("; ".join(self.errors))
-        return {"appointment_id": self.appointment_id}
+        return {
+            "appointment_id": self.appointment_id,
+            "reason": self.reason,
+        }
