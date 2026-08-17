@@ -47,15 +47,21 @@ class BookingForm:
 @dataclass
 class CancelForm:
     appointment_id: str
+    reason: str
     errors: list[str] = field(default_factory=list)
 
     def validate(self) -> bool:
         self.errors = []
         if not self.appointment_id.strip():
             self.errors.append("appointment_id is required")
+        if not self.reason.strip():
+            self.errors.append("reason is required")
         return not self.errors
 
     def to_payload(self) -> dict:
         if not self.validate():
             raise FormValidationError("; ".join(self.errors))
-        return {"appointment_id": self.appointment_id}
+        return {
+            "appointment_id": self.appointment_id,
+            "reason": self.reason,
+        }

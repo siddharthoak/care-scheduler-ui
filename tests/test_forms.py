@@ -20,11 +20,24 @@ def test_booking_form_missing_fields_raises():
 
 
 def test_cancel_form_valid_payload():
-    form = CancelForm(appointment_id="a1")
-    assert form.to_payload() == {"appointment_id": "a1"}
+    form = CancelForm(appointment_id="a1", reason="scheduling conflict")
+    assert form.to_payload() == {
+        "appointment_id": "a1",
+        "reason": "scheduling conflict",
+    }
 
 
 def test_cancel_form_missing_id_raises():
-    form = CancelForm(appointment_id="")
+    form = CancelForm(appointment_id="", reason="scheduling conflict")
     with pytest.raises(FormValidationError):
         form.to_payload()
+
+
+def test_cancel_form_missing_reason_raises():
+    form = CancelForm(appointment_id="a1", reason="")
+    with pytest.raises(FormValidationError):
+        form.to_payload()
+
+    form2 = CancelForm(appointment_id="a1", reason="   ")
+    with pytest.raises(FormValidationError):
+        form2.to_payload()
