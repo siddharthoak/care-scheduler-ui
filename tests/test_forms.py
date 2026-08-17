@@ -65,3 +65,11 @@ def test_cancel_form_punctuation_only_reasons_raise():
             form.to_payload()
         assert "reason cannot be a placeholder" in str(excinfo.value)
 
+
+def test_cancel_form_placeholder_variations_raise():
+    for reason_val in ["  none  ", "   TBD   ", " - - "]:
+        form = CancelForm(appointment_id="a1", reason=reason_val)
+        with pytest.raises(FormValidationError):
+            form.to_payload()
+
+
