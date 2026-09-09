@@ -47,15 +47,24 @@ class BookingForm:
 @dataclass
 class CancelForm:
     appointment_id: str
+    cancellation_reason: str = ""
     errors: list[str] = field(default_factory=list)
 
     def validate(self) -> bool:
         self.errors = []
         if not self.appointment_id.strip():
             self.errors.append("appointment_id is required")
+        trimmed_reason = self.cancellation_reason.strip()
+        if not trimmed_reason:
+            self.errors.append("cancellation_reason is required")
+        elif len(trimmed_reason) > 200:
+            self.errors.append("cancellation_reason cannot exceed 200 characters")
         return not self.errors
 
     def to_payload(self) -> dict:
         if not self.validate():
             raise FormValidationError("; ".join(self.errors))
-        return {"appointment_id": self.appointment_id}
+        return {
+            "appointment_id": self.appointment_id,
+            "cancellation_reason": self.cancellation_reason.strip(),
+        }
